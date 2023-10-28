@@ -25,6 +25,7 @@ void kellog_resource_release(void)
             device_destroy(kellog_device_class, MKDEV(kellog_device_number_majour, i));
             kellog_class_device[i] = NULL;
         }
+        kfree(kellog_class_device);
         kellog_class_device = NULL;
     }
 

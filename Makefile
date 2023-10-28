@@ -1,6 +1,8 @@
 LDDINC=$(PWD)/../include
 EXTRA_CFLAGS += -I$(LDDINC) -I"$(PWD)"
 
+
+
 ifeq ($(KERNELRELEASE),)
     KERNELDIR ?= /lib/modules/$(shell uname -r)/build
     PWD := $(shell pwd)
@@ -19,7 +21,7 @@ clean:
 else
 	kellogg-objs := kellogg-exit.o  kellogg-init.o  kellogg-main.o
 	obj-m	:= kellogg.o
-
+	CFLAGS_kellogg.o := -g
 endif
 
 

@@ -36,7 +36,9 @@ static int __init kellog_init(void)
 
     // create device in devfs
     {
-        kellog_class_device = kmalloc(KELLOG_DEVICE_ID_MINOR_START * sizeof(struct device *), GFP_KERNEL);
+        printk(KERN_INFO "%s: before kmalloc device\n", KELLOG_NAME);
+        kellog_class_device = kmalloc(KELLOG_DEVICE_CNT * sizeof(struct device *), GFP_KERNEL);
+        printk(KERN_INFO "%s: after kmalloc device\n", KELLOG_NAME);
         if (!kellog_class_device)
         {
             printk(KERN_ALERT "%s: failed to malloc for class device\n", KELLOG_NAME);
