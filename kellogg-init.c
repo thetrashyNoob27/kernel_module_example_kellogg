@@ -1,12 +1,6 @@
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/fs.h>
-#include <linux/cdev.h>
-
 #include "kellogg.h"
 
-static int __init kellog_init(void)
+static int __init kellogg_init(void)
 {
     printk(KERN_ALERT "kellogg init\n");
     // alloc device major id
@@ -21,6 +15,34 @@ static int __init kellog_init(void)
         }
         kellog_device_number_majour = MAJOR(dev);
         printk(KERN_INFO "%s: ddevice major id alloc correctly\n", KELLOG_NAME);
+    }
+
+    // register the  character device
+    {
+        kellogg_char_device = kmalloc(KELLOG_DEVICE_CNT * sizeof(struct kellogg_cdev), GFP_KERNEL);
+        if (!kellogg_char_device)
+        {
+            printk(KERN_ALERT "%s: failed to malloc for kellogg_char_device\n", KELLOG_NAME);
+            goto fail;
+        }
+        memset(kellogg_char_device, 0, KELLOG_DEVICE_CNT * sizeof(struct kellogg_cdev));
+        printk(KERN_INFO "%s:kellogg_char_device kmalloc successful\n", KELLOG_NAME);
+        for (int i = 0; i < KELLOG_DEVICE_CNT; i++)
+        {
+            int add_result;
+            int devno = MKDEV(kellog_device_number_majour, KELLOG_DEVICE_ID_MINOR_START + i);
+
+            struct kellogg_cdev *device = kellogg_char_device + i;
+            kellogg_character_device_setup(device);
+            cdev_init(&device->cdev, &kellogg_file_operation);
+            add_result = cdev_add(&device->cdev, devno, 1);
+            if (add_result)
+            {
+                printk(KERN_ALERT "%s: Error %d adding %s%d\n", KELLOG_NAME, add_result, KELLOG_DEVICE_NAME, i);
+                goto fail;
+            }
+        }
+        printk(KERN_INFO "%s: character device register successful\n", KELLOG_NAME);
     }
 
     // Register the device class
@@ -46,7 +68,7 @@ static int __init kellog_init(void)
         }
         memset(kellog_class_device, 0, KELLOG_DEVICE_CNT * sizeof(struct device *));
         printk(KERN_INFO "%s: device struct kmalloc successful\n", KELLOG_NAME);
-        for (int i = 0; i < KELLOG_DEVICE_ID_MINOR_START; i++)
+        for (int i = 0; i < KELLOG_DEVICE_CNT; i++)
         {
             kellog_class_device[i] = device_create(kellog_device_class, NULL, MKDEV(kellog_device_number_majour, i), NULL, "%s%d", KELLOG_DEVICE_NAME, i);
             if (IS_ERR(kellog_class_device[i]))
@@ -54,6 +76,7 @@ static int __init kellog_init(void)
                 printk(KERN_ALERT "%s:Failed to create the device in devfs %s%d\n", KELLOG_NAME, KELLOG_DEVICE_NAME, i);
                 goto fail;
             }
+            printk(KERN_INFO "%s: create dev file %s%d\n", KELLOG_NAME, KELLOG_DEVICE_NAME, i);
         }
         printk(KERN_INFO "%s: devfs device created correctly\n", KELLOG_NAME);
     }
@@ -65,4 +88,14 @@ fail:
     return 1;
 }
 
-module_init(kellog_init);
+void kellogg_character_device_setup(struct kellogg_cdev *dev)
+{
+    if (!dev)
+    {
+        printk(KERN_WARNING "%s:get your shit together. your are trying to kellogg_character_device_setup a NULL\n", KELLOG_NAME);
+        return;
+    }
+    mutex_init(&dev->lock);
+}
+
+module_init(kellogg_init);

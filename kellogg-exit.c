@@ -1,9 +1,3 @@
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/fs.h>
-#include <linux/cdev.h>
-
 #include "kellogg.h"
 
 static void __exit kellog_exit(void)
@@ -17,7 +11,7 @@ void kellog_resource_release(void)
     // remove device in devfs
     if (kellog_class_device)
     {
-        for (int i = 0; i < KELLOG_DEVICE_ID_MINOR_START; i++)
+        for (int i = 0; i < KELLOG_DEVICE_CNT; i++)
         {
             if (kellog_class_device[i] == NULL)
                 continue;
@@ -38,9 +32,35 @@ void kellog_resource_release(void)
         kellog_device_class = NULL;
     }
 
+    // un-register the character device
+    if (kellogg_char_device)
+    {
+        printk(KERN_INFO "%s:un-register the char device\n", KELLOG_NAME);
+        for (int i = 0; i < KELLOG_DEVICE_CNT; i++)
+        {
+            struct kellogg_cdev *device = kellogg_char_device + i;
+            cdev_del(&device->cdev);
+            // clean up character device start
+            
+            // clean up character device end
+        }
+        kfree(kellogg_char_device);
+        kellogg_char_device = NULL;
+    }
+
     // un-register device major id
     printk(KERN_INFO "%s:un-register the device major id\n", KELLOG_NAME);
     unregister_chrdev_region(MKDEV(kellog_device_number_majour, 0), KELLOG_DEVICE_CNT);
+}
+
+void kellogg_character_device_cleanup(struct kellogg_cdev *dev)
+{
+    if(!dev)
+    {
+        printk(KERN_WARNING "%s:get your shit together. your are trying to kellogg_character_device_cleanup a NULL\n", KELLOG_NAME);
+        return;
+    }
+
 }
 
 module_exit(kellog_exit);
