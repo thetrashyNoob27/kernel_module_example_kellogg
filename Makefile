@@ -19,7 +19,7 @@ clean:
 .PHONY: modules modules_install clean
 
 else
-	kellogg-objs := kellogg-exit.o  kellogg-init.o  kellogg-main.o kellogg-char_dev_llseek.o kellogg-char_dev_read.o kellogg-char_dev_write.o kellogg-char_dev_unlocked_ioctl.o kellogg-char_dev_open.o kellogg-char_dev_release.o 
+	kellogg-objs := kellogg-exit.o  kellogg-init.o  kellogg-main.o kellogg-char_dev_llseek.o kellogg-char_dev_read.o kellogg-char_dev_write.o kellogg-char_dev_unlocked_ioctl.o kellogg-char_dev_open.o kellogg-char_dev_release.o  debug_printk_functions.o
 	obj-m	:= kellogg.o
 endif
 

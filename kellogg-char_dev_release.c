@@ -1,4 +1,5 @@
 #include "kellogg.h"
+#include "debug_printk_functions.h"
 
 /** @brief is function is called when the last reference to the device file is released (e.g., when the file is closed). It is used for cleanup and resource deallocation.
  *  @param inodep A pointer to an inode object (defined in linux/fs.h)
@@ -7,6 +8,9 @@
  */
 int kellogg_char_dev_release(struct inode *inodep, struct file *filep)
 {
+    printk_inode_info(KELLOG_NAME, inodep);
+    print_file_info(KELLOG_NAME, filep);
+    print_file_path(KELLOG_NAME,filep);
     printk(KERN_INFO "%s:kellogg_char_dev_release\n", KELLOG_NAME);
     return 0;
 }

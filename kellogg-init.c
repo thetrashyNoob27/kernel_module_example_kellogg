@@ -17,7 +17,7 @@ static int __init kellogg_init(void)
         printk(KERN_INFO "%s: ddevice major id alloc correctly\n", KELLOG_NAME);
     }
 
-    // register the  character device
+    // register the character device
     {
         kellogg_char_device = kmalloc(KELLOG_DEVICE_CNT * sizeof(struct kellogg_cdev), GFP_KERNEL);
         if (!kellogg_char_device)
